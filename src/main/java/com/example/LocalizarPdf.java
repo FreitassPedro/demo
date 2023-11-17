@@ -20,16 +20,18 @@ public class LocalizarPdf {
         // Verifica se o diretório existe
         if (diretorioArquivos.exists() && diretorioArquivos.isDirectory()) {
             File[] arquivos = diretorioArquivos.listFiles();
-
+            String valorDataArquivo = "";
+            String nomeDestinatarioArquivo = "";
             // Itera pelos arquivos no diretório
 
             for (File arquivo : arquivos) {
-                String nomeDestinatarioArquivo = "";
-
-                String[] partes = arquivo.getName().split(" -- ");
-                String valorDataArquivo = partes[0];
-                nomeDestinatarioArquivo = partes[1];
-
+                try {
+                    String[] partes = arquivo.getName().split(" ;;; ");
+                    valorDataArquivo = partes[0];
+                    nomeDestinatarioArquivo = partes[1];
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    continue;
+                }
 
                 double score = similarity.apply(nomeDestinatarioArquivo, nomeDestinatarioCSV.trim());
 
@@ -40,20 +42,15 @@ public class LocalizarPdf {
                     System.out.println("Similaridade: " + score);
                 }
                 if (arquivo.isFile() && score >= limiteSimilaridade && valorDataArquivo.contains(valorTotal)) {
-                    System.out.println("PDF ENCONTRADO: NOME E VALOR -------- lançar!");
                     adicionarTitulo(arquivo, titulo, parcela);
                     return "nomeValorSimilaridade"; // Arquivo encontrado, não é necessário continuar a busca
                 } else if (arquivo.isFile() && arquivo.getName().contains(nomeDestinatarioCSV)) {
-                    System.out.println("PDF ENCONTRADO: NOME E VALOR CONTAINS");
+                    adicionarTitulo(arquivo, titulo, parcela);
                     return "nomeValorContains";
                 } else if (arquivo.isFile() && score >= limiteSimilaridade) {
-                    System.out.println("PDF ENCONTRADO: NOME");
                     return "nome";
                 } else if (arquivo.isFile() && arquivo.getName().contains(valorTotal)) {
-                    System.out.println("PDF ENCONTRADO: VALOR");
                     return "valor";
-                } else {
-                    return "nada";
                 }
             }
 
@@ -66,13 +63,12 @@ public class LocalizarPdf {
         return "Não encontrado 2";
     }
 
-    
-
     public static void adicionarTitulo(File arquivo, String titulo, String parcela) {
         String[] nomeTratar = arquivo.getName().split(".pdf");
         nomeTratar[0] = nomeTratar[0].replace("--", "-");
+        System.out.println("nome tratar: " + nomeTratar[0]);
         if (!titulo.equals("null")) {
-            String nomeFinal = nomeTratar[0] + " - " + titulo + "." + parcela + ".pdf";
+            String nomeFinal = nomeTratar[0] + "_" + titulo + "." + parcela + ".pdf";
 
             File arquivoFinal = new File(App.directoryFiles(), nomeFinal);
 
