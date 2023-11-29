@@ -16,19 +16,31 @@ public class LocalizarPdf {
         String diretorio = App.directoryFiles();
 
         File diretorioArquivos = new File(diretorio);
-
+        
         // Verifica se o diretório existe
         if (diretorioArquivos.exists() && diretorioArquivos.isDirectory()) {
+            String resposta = "Nada encontrado";
             File[] arquivos = diretorioArquivos.listFiles();
             String valorDataArquivo = "";
             String nomeDestinatarioArquivo = "";
+
+            String valorRecortadoArquivo;
             // Itera pelos arquivos no diretório
 
             for (File arquivo : arquivos) {
+                String nomeArquivo = arquivo.getName();
+                System.out.println("TESTE 1 --------------------------------------------");
+                System.out.println("Arquivo 1: " + nomeArquivo);
+                System.out.println("Valor a ser encontrado: " + valorTotal);
+
+                // Se CONTEM String valor total
+                System.out.println(nomeArquivo.contains(valorTotal));
+                System.out.println("--------------------------------------------");
                 try {
-                    String[] partes = arquivo.getName().split(" ;;; ");
+                    String[] partes = nomeArquivo.split(" - ");
                     valorDataArquivo = partes[0];
                     nomeDestinatarioArquivo = partes[1];
+
                 } catch (ArrayIndexOutOfBoundsException e) {
                     continue;
                 }
@@ -37,30 +49,27 @@ public class LocalizarPdf {
 
                 double limiteSimilaridade = 0.68;
 
-                if (score >= limiteSimilaridade) {
-                    System.out.println("Comprovante: " + nomeDestinatarioArquivo);
-                    System.out.println("Similaridade: " + score);
-                }
-                if (arquivo.isFile() && score >= limiteSimilaridade && valorDataArquivo.contains(valorTotal)) {
-                    adicionarTitulo(arquivo, titulo, parcela);
-                    return "nomeValorSimilaridade"; // Arquivo encontrado, não é necessário continuar a busca
-                } else if (arquivo.isFile() && arquivo.getName().contains(nomeDestinatarioCSV)) {
-                    adicionarTitulo(arquivo, titulo, parcela);
-                    return "nomeValorContains";
+                if (arquivo.isFile() && arquivo.getName().contains(nomeDestinatarioCSV)
+                        && arquivo.getName().contains(valorTotal)) {
+                    // adicionarTitulo(arquivo, titulo, parcela);
+                    return "returnNomeValor";
+                } else if (arquivo.isFile() && score >= limiteSimilaridade && valorDataArquivo.contains(valorTotal)) {
+                    // adicionarTitulo(arquivo, titulo, parcela);
+                    return "returnSimilaridade"; // Arquivo encontrado, não é necessário continuar a busca
                 } else if (arquivo.isFile() && score >= limiteSimilaridade) {
-                    return "nome";
+                    System.out.println(valorDataArquivo + " : " + valorTotal);
+                    resposta = "semReturnApenasSimilaridade";
                 } else if (arquivo.isFile() && arquivo.getName().contains(valorTotal)) {
-                    return "valor";
+                    System.out.println("valor: " + nomeDestinatarioArquivo);
+                    resposta = "semReturnApenasValor";
                 }
             }
 
-            // Se chegou até aqui, o arquivo não foi encontrado
-            System.out.println("COMPROVANTE: Não encontrado");
-            return "Não encontrado";
+            return resposta;
         } else {
             System.out.println("O diretório especificado não existe ou não é um diretório válido.");
         }
-        return "Não encontrado 2";
+        return "Não encontrado";
     }
 
     public static void adicionarTitulo(File arquivo, String titulo, String parcela) {

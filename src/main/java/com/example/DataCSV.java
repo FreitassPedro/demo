@@ -3,10 +3,11 @@ package com.example;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.text.Normalizer;
-import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Scanner;
-import com.example.LocalizarPdf;
+import com.example.ContasCredor;
 
 public class DataCSV {
     public static void pegarDados() throws FileNotFoundException {
@@ -25,18 +26,19 @@ public class DataCSV {
             String numeroTitulo = dadosDividos[2];
             String numeroParcela = dadosDividos[3];
             String valorPagamentoLiquido = formatarMoeda(dadosDividos[4]);
-            System.out.println(dataPagamento);
-            System.out.println(nomeCredor);
-            System.out.println(valorPagamentoLiquido);
 
-            // double valorPagamentoSomado = Double.parseDouble(dadosDividos[4]);
             String resposta = LocalizarPdf.localizarArquivosPdf(nomeCredor, valorPagamentoLiquido, numeroTitulo,
                     numeroParcela);
+            
+            //Retorna se encontrar apenas Similaridade com o nome mas o valor for diferente
+            if (resposta.equals("semReturnApenasSimilaridade")) {
+                verificarValores(nomeCredor, dadosDividos[4], numeroTitulo);
+            }
             System.out.println("Resposta: " + resposta);
             System.out.println();
-            // String nomeDestinatario, String valorTotal, String titulo, String parcela
         }
         sc.close();
+        ContasCredor.imprimirTodosValores();
     }
 
 
@@ -46,20 +48,28 @@ public class DataCSV {
         nome = nome.trim();
         return nome.toUpperCase();
     }
-
+    
+    //Formtar valor inserido, por exemplo,  7312,06 vira 7.312,06
     private static String formatarMoeda(String valorEntrada) {
-        String valorFormatado = valorEntrada.replace(",", ".");
-
-        try {
-            // Converte a string para um número
-            double valor = Double.parseDouble(valorFormatado);
-
-            // Formata o valor como moeda brasileira
-            NumberFormat formatoMoeda = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
-            return formatoMoeda.format(valor);
-        } catch (NumberFormatException e) {
-            System.out.println("Erro ao converter a string para um número: " + e.getMessage());
-            return "Erro ao formatar moeda";
+        double valorPendencia = Double.parseDouble(valorEntrada.replace(",", "."));
+        String precoString;
+        if (valorPendencia >= 1000) {
+            precoString = String.format(Locale.forLanguageTag("pt-BR"), "%,.2f", valorPendencia);
+        } else {
+            precoString = String.format(Locale.forLanguageTag("pt-BR"), 
+            "%.2f", valorPendencia).replace(".", ",");
         }
+        return precoString;
 }
+
+    public static void verificarValores(String nome, String valor, String titulo) {
+        valor = valor.replace(",", ".");
+        Double valorDouble = Double.parseDouble(valor);
+    
+        ContasCredor.adicionarItem("Banana", 2000.2, "19212");
+        ContasCredor.adicionarItem("Banana", 500.00, "10000");
+        ContasCredor.adicionarItem(nome, valorDouble, titulo);
+    }
+
+    
 }

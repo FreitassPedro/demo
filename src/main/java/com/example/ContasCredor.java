@@ -1,60 +1,60 @@
 package com.example;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ContasCredor {
-    private String nome;
-    private String titulos;
-    private String parcela;
-    private double quantidade;
+    private static Map<String, ContasCredor> mapa = new HashMap<>();
     private double valor;
+    private Map<String, Double> titulos;
+    //Acessar o mapa
+    public static Map<String, ContasCredor> getMapa() {
+        return mapa;
+    }
 
-    public ContasCredor() {}
-
-    public ContasCredor(String nome, String titulos, String parcela, double quantidade, double valor) {
-        this.nome = nome;
-        this.titulos = titulos;
-        this.parcela = parcela;
-        this.quantidade = quantidade;
+    public ContasCredor(double valor) {
         this.valor = valor;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getTitulos() {
-        return titulos;
-    }
-
-    public void setTitulos(String titulos) {
-        this.titulos = titulos;
-    }
-
-    public String getParcela() {
-        return parcela;
-    }
-
-    public void setParcela(String parcela) {
-        this.parcela = parcela;
-    }
-
-    public double getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(double quantidade) {
-        this.quantidade = quantidade;
+        this.titulos = new HashMap<>();
     }
 
     public double getValor() {
         return valor;
     }
 
-    public void setValor(double valor) {
-        this.valor = valor;
-    } 
-}
+    public Map<String, Double> getTitulos() {
+        return titulos;
+    }
 
+    public void adicionarValor(double valor) {
+        this.valor += valor;
+    }
+
+    public void adicionarTitulo(String titulo, double valor) {
+        titulos.put(titulo, titulos.getOrDefault(titulo, 0.0) + valor);
+    }
+
+    public static void adicionarItem(String nome, double valor, String titulo) {
+        ContasCredor credor = mapa.get(nome);
+        if (credor == null) {
+            credor = new ContasCredor(valor);
+            mapa.put(nome, credor);
+        } else {
+            credor.adicionarValor(valor);
+        }
+
+
+        credor.adicionarTitulo(titulo, valor);
+    }
+
+    public static void imprimirTodosValores() {
+        System.out.println("IMPRIMINDO TODOS VALORES - OPEN");
+        for(Map.Entry<String, ContasCredor> entry : mapa.entrySet()) {
+            String nome = entry.getKey();
+            ContasCredor credor = entry.getValue();
+
+            System.out.println("Credor: " + nome);
+            System.out.println("Valor total: " + credor.getValor());
+        System.out.println("IMPRIMINDO TODOS VALORES - CLOSE");
+        }
+        }
+    }
